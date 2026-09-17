@@ -784,3 +784,64 @@
 
 /* === licznik otwarć demo (buy-signal) v3 — geo po stronie serwera === */
 (function(){try{if(String(location.protocol).indexOf('http')!==0)return;try{if(/[?&#]team=1/.test(location.search+location.hash)){localStorage.setItem('nb_team','1');}}catch(e){}try{if(localStorage.getItem('nb_team')==='1')return;}catch(e){}if(/crm-newbeginning|crm\.impulseo\.pl/.test(document.referrer||''))return;try{if(navigator.webdriver)return;}catch(e){}try{if(/^https?:\/\/(kris20032|impulseo-pl)\.github\.io\/?$/i.test(document.referrer||''))return;}catch(e){}if(sessionStorage.getItem('_dv'))return;sessionStorage.setItem('_dv','1');var seg=(location.pathname.split('/').filter(Boolean)[0])||'';var base=location.origin+(seg?('/'+seg):'');var ua='';try{ua=(navigator.userAgent||'').slice(0,300);}catch(e){}var EP='https://zngfubfinbojfgaxdrbf.supabase.co/functions/v1/demo-view';try{fetch(EP,{method:'POST',keepalive:true,headers:{'Content-Type':'text/plain'},body:JSON.stringify({demo_url:base,page:location.pathname,referrer:(document.referrer||null),user_agent:(ua||null)})}).catch(function(){});}catch(e){}}catch(e){}})();
+
+
+/* === EFEKTY SPECJALNE - KAPIMA-BUD (17.09.2026, „jak u Prąd i Piksel") ===
+   Para do bloku na końcu styles.css. Wstrzykuje WYŁĄCZNIE dekoracje (aria-hidden,
+   pointer-events:none), niczego nie przestawia w treści. Klasa html.fx-on włącza stany
+   ruchu dopiero po udanym starcie - awaria = strona wygląda jak przed tym blokiem. */
+(function () {
+  'use strict';
+  try {
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var hover = window.matchMedia && window.matchMedia('(hover: hover)').matches;
+    function all(sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); }
+    function deko(cls, host, html) {
+      var i = document.createElement('i');
+      i.className = cls;
+      i.setAttribute('aria-hidden', 'true');
+      if (html) i.innerHTML = html;
+      host.appendChild(i);
+      return i;
+    }
+
+    /* 1+2) hero: ziarno + poziomica laserowa (raz, po wejściu) */
+    var hero = document.querySelector('.hero-fach');
+    if (hero) {
+      deko('fx-grain', hero);
+      if (!reduce) deko('fx-laser', hero, '<i class="fx-h"></i><i class="fx-v"></i>');
+    }
+
+    /* 2) ziarno na nagłówkach podstron */
+    all('.pagehead').forEach(function (p) { deko('fx-grain', p); });
+
+    /* 3) siatka fug w tle procesu i CTA */
+    all('.proces-os, .cta').forEach(function (s) {
+      s.classList.add('fx-host');
+      deko('fx-siatka', s);
+    });
+
+    /* 2+6) CTA: ziarno + światło za kursorem (tylko z myszą) */
+    all('.cta').forEach(function (cta) {
+      deko('fx-grain', cta);
+      if (!hover || reduce) return;
+      var spot = deko('fx-spot', cta);
+      var czeka = false, x = 0, y = 0;
+      cta.addEventListener('pointermove', function (e) {
+        x = e.clientX; y = e.clientY;
+        if (czeka) return;
+        czeka = true;
+        window.requestAnimationFrame(function () {
+          var r = cta.getBoundingClientRect();
+          spot.style.setProperty('--fx-x', (x - r.left) + 'px');
+          spot.style.setProperty('--fx-y', (y - r.top) + 'px');
+          czeka = false;
+        });
+      }, { passive: true });
+    });
+
+    document.documentElement.classList.add('fx-on');
+  } catch (e) {
+    document.documentElement.classList.remove('fx-on');
+  }
+})();

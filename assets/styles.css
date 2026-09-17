@@ -1847,3 +1847,105 @@ footer{view-transition-name:mt-foot}
 .btn-accent{color:#14171c}
 .nav .nav-links a.btn-accent{color:#14171c}
 .btn-accent[data-accent-d],.cta-d .btn-accent{color:#14171c}
+
+
+/* ============================================================
+   EFEKTY SPECJALNE - KAPIMA-BUD (17.09.2026, prośba Szymona: „jak u Prąd i Piksel")
+   ------------------------------------------------------------
+   Wzorzec: demo prad-i-piksel (ziarno, siatka w tle, panele rozsuwane na najechanie,
+   animowane ścieżki, światło). Tu przełożone na klimat remontów:
+     1. poziomica laserowa przejeżdżająca RAZ przez zdjęcie w hero (nie rusza <img>),
+     2. ziarno na hero / nagłówkach podstron / CTA,
+     3. siatka fug w tle sekcji procesu i CTA (maska radialna, ledwo widoczna),
+     4. bramy usług na stronie głównej rozsuwają się na najechanie (jak panele P&P),
+     5. pas z zakresem prac przewijany w pętli (zatrzymuje się pod kursorem),
+     6. światło za kursorem w ciemnym CTA,
+     7. cienka ramka odsłaniana na kaflach galerii i bramach.
+   Bezpieczniki: stany ruchu włącza JS klasą html.fx-on (awaria JS = strona jak dotąd),
+   prefers-reduced-motion gasi wszystko, dekoracje mają aria-hidden + pointer-events:none.
+   ============================================================ */
+
+/* --- 1) POZIOMICA LASEROWA w hero --- */
+.hero-fach .hf-panel{position:relative;z-index:1}
+.fx-laser{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;--fx-laser:var(--accent)}
+@supports (color:color-mix(in srgb,red,#fff)){.fx-laser{--fx-laser:color-mix(in srgb,var(--accent) 58%,#fff)}}
+.fx-laser i{position:absolute;display:block;opacity:0}
+.fx-laser .fx-h{left:0;right:0;top:8%;height:2px;
+  background:linear-gradient(90deg,transparent 0%,var(--fx-laser) 14%,#fff 50%,var(--fx-laser) 86%,transparent 100%);
+  box-shadow:0 0 8px 1px var(--fx-laser),0 0 26px 5px rgba(232,163,23,.28)}
+.fx-laser .fx-v{top:0;bottom:0;left:6%;width:2px;
+  background:linear-gradient(180deg,transparent 0%,var(--fx-laser) 14%,#fff 50%,var(--fx-laser) 86%,transparent 100%);
+  box-shadow:0 0 8px 1px var(--fx-laser),0 0 26px 5px rgba(232,163,23,.28)}
+.fx-on .fx-laser .fx-h{animation:fxLaserH 2.8s cubic-bezier(.45,0,.2,1) .7s 1 both}
+.fx-on .fx-laser .fx-v{animation:fxLaserV 2.8s cubic-bezier(.45,0,.2,1) 1.4s 1 both}
+@keyframes fxLaserH{0%{top:8%;opacity:0}10%{opacity:.95}90%{opacity:.95}100%{top:92%;opacity:0}}
+@keyframes fxLaserV{0%{left:6%;opacity:0}10%{opacity:.95}90%{opacity:.95}100%{left:94%;opacity:0}}
+
+/* --- 2) ZIARNO --- */
+.fx-grain{position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:180px 180px}
+.pagehead .fx-grain{opacity:.09}
+.cta .fx-grain{opacity:.12}
+
+/* --- 3) SIATKA FUG w tle sekcji --- */
+.fx-host{position:relative;isolation:isolate}
+.fx-siatka{position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background-image:linear-gradient(var(--fx-line,rgba(21,33,46,.07)) 1px,transparent 1px),
+                   linear-gradient(90deg,var(--fx-line,rgba(21,33,46,.07)) 1px,transparent 1px);
+  background-size:84px 84px;background-position:center top;
+  -webkit-mask-image:radial-gradient(ellipse 85% 75% at 50% 0%,#000 20%,transparent 82%);
+          mask-image:radial-gradient(ellipse 85% 75% at 50% 0%,#000 20%,transparent 82%)}
+.proces-os{--fx-line:rgba(21,33,46,.075)}
+.cta{--fx-line:rgba(255,255,255,.07)}
+.cta .fx-siatka{-webkit-mask-image:radial-gradient(ellipse 90% 90% at 80% 50%,#000 10%,transparent 80%);
+                        mask-image:radial-gradient(ellipse 90% 90% at 80% 50%,#000 10%,transparent 80%)}
+
+/* --- 4) BRAMY USŁUG rozsuwają się na najechanie (desktop z myszą) --- */
+@media (min-width:761px) and (hover:hover) and (prefers-reduced-motion:no-preference){
+  .fx-on .gateways{display:flex;gap:var(--space-4);height:clamp(400px,54vh,600px)}
+  .fx-on .gateways .gateway{flex:1 1 0;min-width:0;aspect-ratio:auto;height:100%;
+    transition:opacity 1s var(--mt-ease),transform 1s var(--mt-ease),flex-grow .75s var(--mt-ease)}
+  .fx-on .gateways:hover .gateway{flex-grow:.72}
+  .fx-on .gateways .gateway:hover{flex-grow:1.9}
+  .fx-on .gateway .g-ttl::after{content:"Zobacz ofertę →";display:block;margin-top:.55rem;
+    font-family:var(--font-body);font-weight:600;font-size:var(--text-sm);letter-spacing:.02em;
+    color:rgba(255,255,255,.88);opacity:0;translate:0 8px;
+    transition:opacity .55s var(--mt-ease) .1s,translate .55s var(--mt-ease) .1s}
+  .fx-on .gateway:hover .g-ttl::after{opacity:1;translate:0 0}
+}
+
+/* --- 5) PAS Z ZAKRESEM PRAC (pętla, pauza pod kursorem) --- */
+.fx-pas{padding:0;border-top:var(--hairline);border-bottom:var(--hairline);background:var(--paper-2);
+  overflow:hidden;white-space:nowrap;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);
+          mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent)}
+.fx-pas-track{display:inline-flex;align-items:center;padding-block:var(--space-4);will-change:transform}
+.fx-on .fx-pas-track{animation:fxPas 42s linear infinite}
+.fx-pas:hover .fx-pas-track{animation-play-state:paused}
+.fx-pas-item{display:inline-flex;align-items:center;padding-inline:clamp(.9rem,2.4vw,2rem);
+  font-family:var(--font-display);font-weight:700;text-transform:uppercase;letter-spacing:.14em;
+  font-size:clamp(.76rem,1.3vw,.92rem);color:var(--ink-soft)}
+.fx-pas-item::before{content:"";width:7px;height:7px;background:var(--accent);rotate:45deg;flex:none;
+  margin-right:clamp(.9rem,2.4vw,2rem)}
+@keyframes fxPas{to{transform:translateX(-50%)}}
+
+/* --- 6) ŚWIATŁO ZA KURSOREM w CTA --- */
+.fx-spot{position:absolute;inset:0;z-index:0;pointer-events:none;opacity:0;transition:opacity .7s var(--mt-ease);
+  background:radial-gradient(520px circle at var(--fx-x,50%) var(--fx-y,50%),rgba(232,163,23,.2),transparent 62%)}
+@media (hover:hover){.cta:hover .fx-spot{opacity:1}}
+
+/* --- 7) RAMKA na kaflach ze zdjęciem (hover) --- */
+@media (hover:hover){
+  .fx-on .tile::before,.fx-on .gateway::before{content:"";position:absolute;inset:14px;z-index:3;
+    border:1px solid rgba(255,255,255,.8);pointer-events:none;opacity:0;scale:.94;
+    transition:opacity .7s var(--mt-ease),scale .9s var(--mt-ease)}
+  .fx-on .tile:hover::before,.fx-on .gateway:hover::before{opacity:1;scale:1}
+}
+
+/* --- reduced motion: wszystko stoi --- */
+@media (prefers-reduced-motion:reduce){
+  .fx-laser{display:none}
+  .fx-pas-track{animation:none}
+  .fx-spot{display:none}
+}
